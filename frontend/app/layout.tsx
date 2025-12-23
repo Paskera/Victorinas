@@ -12,7 +12,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
-      <body>{children}</body>
+      <body className="bg-dark_bg bg-game-pattern text-light_text font-sans antialiased">
+        {children}
+      </body>
     </html>
   )
 }

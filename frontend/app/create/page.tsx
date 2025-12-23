@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { QRCode } from '../components/QRCode'
+import FloatingElements from '../components/FloatingElements'
 
 export default function CreatePage() {
   const [isCreating, setIsCreating] = useState(false)
@@ -67,51 +68,53 @@ export default function CreatePage() {
 Убедитесь, что телефон и компьютер в одной Wi-Fi сети!`)
   }
 
+  const pageEmojis = [
+    '🛠️', '⚙️', '📝', '🕹️', '📡', '🔌', '🔋', '💾', '🖥️', '⌨️', '🖱️', '🧠', '⚡', '🔧', '🔨'
+  ];
+
   if (createdRoom) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent mb-4">
-            💀 Комната создана!
-          </h1>
+      <div className="relative flex items-center justify-center p-4 min-h-screen">
+        <FloatingElements emojis={pageEmojis} />
+        <div className="bg-dark_card rounded-xl shadow-lg p-8 w-full relative z-10 max-w-md text-center">
           
-          <div className="mb-6">
-            <p className="text-gray-600 mb-2">Код комнаты:</p>
-            <p className="text-4xl font-bold text-gray-800 mb-4">{createdRoom.code}</p>
+          <div className="mb-8">
+            <p className="text-light_text mb-2 text-xl">Код комнаты:</p>
+            <p className="text-6xl font-bold text-accent mb-4 tracking-wider">{createdRoom.code}</p>
           </div>
 
-          <div className="mb-6">
-            <p className="text-gray-700 mb-3">Подключитесь с телефона:</p>
-            <div className="flex justify-center">
-              <QRCode url={createdRoom.url} size={180} />
+          <div className="mb-8">
+            <p className="text-light_text mb-4 text-lg">Подключитесь с телефона:</p>
+            <div className="flex justify-center bg-white p-4 rounded-xl inline-block shadow-inner">
+              <QRCode url={createdRoom.url} size={200} />
             </div>
           </div>
 
-          <div className="space-y-3 text-sm text-gray-600 mb-6">
-            <p>📱 <strong>Способ 1:</strong> Отсканируйте QR-код</p>
-            <p>🔗 <strong>Способ 2:</strong> Перейдите по ссылке:</p>
-            <p className="bg-gray-100 p-2 rounded break-all text-xs">
+          <div className="space-y-4 text-base text-light_text mb-8">
+            <p>📱 <strong className="text-accent">Способ 1:</strong> Отсканируйте QR-код</p>
+            <p>🔗 <strong className="text-accent">Способ 2:</strong> Перейдите по ссылке:</p>
+            <p className="bg-dark_bg p-3 rounded-lg break-all text-sm font-mono text-gray-300 border border-gray-700">
               {createdRoom.url}
             </p>
           </div>
 
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-            <p className="text-green-800 text-sm font-semibold">✓ Правильный IP</p>
-            <p className="text-green-700 text-xs mt-1">
+          <div className="bg-green-900/30 border border-green-700/50 rounded-lg p-4 mb-6">
+            <p className="text-green-400 font-semibold">✓ Правильный IP</p>
+            <p className="text-green-300/80 text-sm mt-1">
               Телефон подключится к: {computerIP}
             </p>
           </div>
 
-          <div className="mt-6 space-y-3">
+          <div className="mt-8 space-y-4">
             <button
               onClick={() => router.push(`/game/${createdRoom.code}?ip=${computerIP}&host=true`)}
-              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-xl transition-colors duration-200 text-xl shadow-lg"
             >
               Присоединиться как ведущий
             </button>
             <button
               onClick={() => router.push('/')}
-              className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
+              className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-4 px-6 rounded-xl transition-colors duration-200 text-lg"
             >
               На главную
             </button>
@@ -122,39 +125,40 @@ export default function CreatePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent mb-4">
+    <div className="relative flex items-center justify-center p-4 min-h-screen">
+      <FloatingElements emojis={pageEmojis} />
+      <div className="bg-dark_card rounded-xl shadow-lg p-10 w-full relative z-10 max-w-md text-center">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-500 to-purple-600 bg-clip-text mb-8 text-light_text leading-tight">
           Создать игру
         </h1>
         
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-            <p className="text-red-800 text-sm">{error}</p>
+          <div className="bg-red-900/30 border border-red-700/50 rounded-lg p-4 mb-6">
+            <p className="text-red-400">{error}</p>
           </div>
         )}
         
-        <div className="mb-6">
-          <p className="text-gray-600 mb-4">Введите IP адрес вашего компьютера:</p>
+        <div className="mb-8">
+          <p className="text-light_text mb-4 text-lg">Введите IP адрес вашего компьютера:</p>
           
-          <div className="flex space-x-2 mb-2">
+          <div className="flex space-x-3 mb-3">
             <input
               type="text"
               value={computerIP}
               onChange={(e) => setComputerIP(e.target.value)}
               placeholder="192.168.1.100"
-              className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-red-500 focus:ring-2 focus:ring-red-200 text-center"
+              className="flex-1 px-4 py-4 border-2 border-accent rounded-xl focus:border-primary focus:ring-2 focus:ring-primary text-center bg-dark_bg text-light_text text-xl placeholder-gray-600"
             />
             <button
               type="button"
               onClick={showIPInstructions}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl transition-colors duration-200"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition-colors duration-200"
             >
               ?
             </button>
           </div>
           
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-400">
             Убедитесь, что это IP вашего компьютера в локальной сети
           </p>
         </div>
@@ -162,7 +166,7 @@ export default function CreatePage() {
         <button
           onClick={createGame}
           disabled={isCreating || !computerIP.trim()}
-          className="w-full bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white font-bold py-4 px-6 rounded-xl transition-colors duration-200 text-lg mb-4"
+          className="w-full bg-primary hover:bg-secondary disabled:bg-gray-700 text-light_text font-bold py-4 px-6 rounded-xl transition-colors duration-200 text-lg mb-4 hover:ring-2 hover:ring-white hover:ring-offset-0"
         >
           {isCreating ? 'Создание...' : 'Создать комнату'}
         </button>

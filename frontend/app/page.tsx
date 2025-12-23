@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import FloatingElements from './components/FloatingElements'
 
 export default function Home() {
   const [roomCode, setRoomCode] = useState('')
@@ -14,39 +15,40 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
+    <div className="relative flex items-center justify-center p-4 min-h-screen">
+      <FloatingElements />
+      <div className="bg-dark_card rounded-xl shadow-lg p-8 w-full relative z-10 max-w-2xl">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent mb-2">
-            💀 Смертельная Вечеринка
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text mb-2">
+            Victorinas
           </h1>
-          <p className="text-gray-600">Подключитесь с телефона и играйте вместе!</p>
+          <p className="text-accent">Подключитесь с телефона и играйте вместе!</p>
         </div>
 
         <div className="space-y-6">
           <div className="text-center">
             <button
               onClick={() => router.push('/create')}
-              className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 rounded-xl transition-colors duration-200 text-lg"
+              className="w-full bg-primary hover:bg-secondary text-light_text font-bold py-4 px-6 rounded-xl transition-colors duration-200 text-lg hover:ring-2 hover:ring-white hover:ring-offset-0"
             >
               Создать игру
             </button>
-            <p className="text-gray-500 text-sm mt-2">
+            <p className="text-light_text text-sm mt-2">
               Вы будете ведущим игры
             </p>
           </div>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
+              <div className="w-full border-t border-accent" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">или</span>
+              <span className="px-2 bg-dark_card text-light_text">или</span>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-light_text mb-2">
               Введите код комнаты:
             </label>
             <div className="flex space-x-2">
@@ -56,12 +58,12 @@ export default function Home() {
                 onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
                 placeholder="ABCD"
                 maxLength={4}
-                className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-red-500 focus:ring-2 focus:ring-red-200 text-center font-mono text-lg uppercase"
+                className="flex-1 px-4 py-3 border-2 border-accent rounded-xl focus:border-primary focus:ring-2 focus:ring-primary text-center font-mono text-lg uppercase text-dark_text"
               />
               <button
                 onClick={joinGame}
                 disabled={!roomCode.trim()}
-                className="bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
+                className="w-full bg-primary hover:bg-secondary disabled:bg-gray-700 text-light_text font-bold py-4 px-6 rounded-xl transition-colors duration-200 text-lg hover:ring-2 hover:ring-white hover:ring-offset-0"
               >
                 Войти
               </button>
@@ -69,9 +71,9 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-          <h3 className="font-semibold text-gray-800 mb-2">Как играть:</h3>
-          <ul className="text-sm text-gray-600 space-y-1">
+        <div className="mt-8 p-4 bg-dark_card rounded-lg">
+          <h3 className="font-semibold text-light_text mb-2">Как играть:</h3>
+          <ul className="text-base text-light_text space-y-1">
             <li>1. Создайте игру или введите код</li>
             <li>2. Подключитесь с телефона</li>
             <li>3. Отвечайте на вопросы и голосуйте</li>

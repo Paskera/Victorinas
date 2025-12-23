@@ -2,6 +2,7 @@
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
+import FloatingElements from '../../components/FloatingElements'
 
 interface GameState {
   game_state: string
@@ -134,29 +135,31 @@ export default function GamePage() {
     }
   }
 
+  const gameEmojis = [
+    '🎮', '🎲', '👾', '🕹️', '🎯', '🎰', '🃏', '🎪', '🎭', '🎫', '🎬', '🎤', '🎧', '🎼', '🎹'
+  ];
+
   if (!connected) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
-          <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent mb-2">
-              💀 Смертельная Вечеринка
-            </h1>
-            <p className="text-gray-600">Код комнаты: <strong className="text-xl">{code}</strong></p>
+      <div className="relative flex items-center justify-center p-4 min-h-screen">
+        <FloatingElements emojis={gameEmojis} />
+        <div className="bg-dark_card rounded-xl shadow-lg p-10 w-full relative z-10 max-w-md text-center">
+          <div className="text-center mb-8">
+            <p className="text-light_text text-lg">Код комнаты: <strong className="text-2xl text-accent tracking-wider ml-2">{code}</strong></p>
           </div>
 
           {connectionError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-              <p className="text-red-800 text-sm">{connectionError}</p>
-              <p className="text-red-700 text-xs mt-2">
+            <div className="bg-red-900/30 border border-red-700/50 rounded-lg p-4 mb-6">
+              <p className="text-red-400">{connectionError}</p>
+              <p className="text-red-300/80 text-sm mt-2">
                 Убедитесь, что бэкенд запущен на компьютере
               </p>
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-lg font-medium text-light_text mb-3 text-left">
                 Ваше имя:
               </label>
               <input
@@ -164,7 +167,7 @@ export default function GamePage() {
                 value={playerName}
                 onChange={(e) => setPlayerName(e.target.value)}
                 placeholder="Введите ваше имя"
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-red-500 focus:ring-2 focus:ring-red-200"
+                className="w-full px-6 py-4 border-2 border-accent rounded-xl focus:border-primary focus:ring-2 focus:ring-primary bg-dark_bg text-light_text placeholder-gray-600 text-xl"
                 maxLength={20}
               />
             </div>
@@ -172,14 +175,14 @@ export default function GamePage() {
             <button
               onClick={connectToGame}
               disabled={!playerName.trim()}
-              className="w-full bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200 disabled:cursor-not-allowed"
+              className="w-full bg-primary hover:bg-secondary disabled:bg-gray-700 text-light_text font-bold py-4 px-8 rounded-xl transition-colors duration-200 disabled:cursor-not-allowed hover:ring-2 hover:ring-white hover:ring-offset-0 text-xl shadow-lg"
             >
               Присоединиться к игре
             </button>
           </div>
 
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <p className="text-blue-800 text-sm">
+          <div className="mt-6 p-4 bg-blue-900/30 rounded-lg">
+            <p className="text-blue-400 text-sm">
               Подключение к: {computerIP}:8000
             </p>
           </div>
@@ -190,30 +193,28 @@ export default function GamePage() {
 
   // Игровой интерфейс
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-100 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="relative min-h-screen p-4">
+      <FloatingElements emojis={gameEmojis} />
+      <div className="max-w-2xl mx-auto relative z-10">
         <header className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">
-            💀 Игровая комната
-          </h1>
-          <p className="text-gray-600">Код: {code} | Игрок: {playerName}</p>
+          <p className="text-light_text mt-2 text-xl">Код: <span className="text-accent font-bold">{code}</span> | Игрок: <span className="text-accent font-bold">{playerName}</span></p>
           {isHost && (
-            <p className="text-green-600 font-semibold">🎮 Вы - ведущий</p>
+            <p className="text-green-400 font-semibold mt-1">🎮 Вы - ведущий</p>
           )}
         </header>
 
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Статус игры</h2>
+        <div className="bg-dark_card rounded-xl shadow-lg p-6 mb-6">
+          <h2 className="text-2xl font-bold text-light_text mb-4">Статус игры</h2>
           
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="bg-green-50 p-3 rounded-lg">
-                <p className="text-green-800 font-semibold">Статус</p>
-                <p className="text-green-600 capitalize">{gameState?.game_state || 'waiting'}</p>
+              <div className="bg-green-900/30 p-3 rounded-lg border border-green-700/50">
+                <p className="text-green-400 font-semibold">Статус</p>
+                <p className="text-green-300 capitalize">{gameState?.game_state || 'waiting'}</p>
               </div>
-              <div className="bg-blue-50 p-3 rounded-lg">
-                <p className="text-blue-800 font-semibold">Игроков</p>
-                <p className="text-blue-600">{gameState?.players?.length || 0}</p>
+              <div className="bg-blue-900/30 p-3 rounded-lg border border-blue-700/50">
+                <p className="text-blue-400 font-semibold">Игроков</p>
+                <p className="text-blue-300">{gameState?.players?.length || 0}</p>
               </div>
             </div>
 
@@ -222,7 +223,7 @@ export default function GamePage() {
               <div className="text-center">
                 <button
                   onClick={startGame}
-                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-xl transition-colors duration-200 text-lg"
+                  className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl transition-colors duration-200 text-lg hover:ring-2 hover:ring-white hover:ring-offset-0"
                 >
                   🎮 Начать игру ({gameState.players.length} игроков)
                 </button>
@@ -230,8 +231,8 @@ export default function GamePage() {
             )}
 
             {isHost && gameState?.game_state === 'waiting' && gameState.players.length < 2 && (
-              <div className="text-center bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-yellow-800">
+              <div className="text-center bg-yellow-900/30 border border-yellow-700/50 rounded-lg p-4">
+                <p className="text-yellow-400">
                   Ожидание игроков... ({gameState.players.length}/2)
                 </p>
               </div>
@@ -239,27 +240,27 @@ export default function GamePage() {
 
             {/* Фаза ответов */}
             {gameState?.game_state === 'answering' && gameState.question && (
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <h3 className="font-semibold text-purple-800 mb-2">Вопрос:</h3>
-                <p className="text-purple-700 text-lg mb-2">{gameState.question.text}</p>
-                <p className="text-purple-600 text-sm mb-4">
+              <div className="bg-purple-900/30 border border-purple-700/50 rounded-lg p-4">
+                <h3 className="font-semibold text-purple-300 mb-2">Вопрос:</h3>
+                <p className="text-purple-200 text-lg mb-2">{gameState.question.text}</p>
+                <p className="text-purple-400 text-sm mb-4">
                   Категория: {gameState.question.category}
                 </p>
                 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-purple-700 mb-2">
+                  <label className="block text-sm font-medium text-purple-300 mb-2">
                     Ваш ответ:
                   </label>
                   <textarea
                     placeholder="Введите ваш ответ..."
                     rows={3}
-                    className="w-full px-3 py-2 border border-purple-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                    className="w-full px-3 py-2 border border-purple-500 rounded-lg focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 bg-dark_bg text-light_text"
                     onBlur={(e) => submitAnswer(e.target.value)}
                   />
                 </div>
                 
-                <div className="bg-blue-50 p-3 rounded-lg">
-                  <p className="text-blue-800 text-sm">
+                <div className="bg-blue-900/30 p-3 rounded-lg">
+                  <p className="text-blue-300 text-sm">
                     Ответили: {gameState.answered_count} / {gameState.total_players}
                   </p>
                 </div>
@@ -268,23 +269,23 @@ export default function GamePage() {
 
             {/* Фаза голосования */}
             {gameState?.game_state === 'voting' && gameState.answers && (
-              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                <h3 className="font-semibold text-indigo-800 mb-4">Голосование: выберите лучший ответ</h3>
+              <div className="bg-indigo-900/30 border border-indigo-700/50 rounded-lg p-4">
+                <h3 className="font-semibold text-indigo-300 mb-4">Голосование: выберите лучший ответ</h3>
                 
                 <div className="space-y-3">
                   {gameState.answers.map((answer: any) => (
                     <button
                       key={answer.id}
                       onClick={() => submitVote(answer.id)}
-                      className="w-full p-4 bg-white border border-indigo-300 rounded-lg text-left hover:bg-indigo-100 transition-colors duration-200"
+                      className="w-full p-4 bg-dark_bg border border-indigo-500 rounded-lg text-left hover:bg-indigo-900/50 transition-colors duration-200 group"
                     >
-                      <p className="text-indigo-800">{answer.text}</p>
+                      <p className="text-indigo-200 group-hover:text-white transition-colors">{answer.text}</p>
                     </button>
                   ))}
                 </div>
                 
-                <div className="bg-blue-50 p-3 rounded-lg mt-4">
-                  <p className="text-blue-800 text-sm">
+                <div className="bg-blue-900/30 p-3 rounded-lg mt-4">
+                  <p className="text-blue-300 text-sm">
                     Проголосовали: {gameState.voted_count} / {gameState.total_players}
                   </p>
                 </div>
@@ -293,20 +294,20 @@ export default function GamePage() {
 
             {/* Результаты раунда */}
             {gameState?.game_state === 'results' && gameState.round_results && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h3 className="font-semibold text-green-800 mb-4">Результаты раунда:</h3>
+              <div className="bg-green-900/30 border border-green-700/50 rounded-lg p-4">
+                <h3 className="font-semibold text-green-300 mb-4">Результаты раунда:</h3>
                 
                 <div className="space-y-3">
                   {gameState.round_results.answers.map((result: any, index: number) => (
-                    <div key={index} className="bg-white p-3 rounded-lg border border-green-200">
+                    <div key={index} className="bg-dark_bg p-3 rounded-lg border border-green-700/30">
                       <div className="flex justify-between items-start mb-2">
-                        <span className="font-semibold text-green-800">{result.player_name}</span>
-                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-semibold">
+                        <span className="font-semibold text-green-400">{result.player_name}</span>
+                        <span className="bg-green-900 text-green-300 px-2 py-1 rounded-full text-sm font-semibold border border-green-700">
                           +{result.points_earned} очков
                         </span>
                       </div>
-                      <p className="text-gray-700 mb-2">{result.answer}</p>
-                      <p className="text-gray-600 text-sm">Голосов: {result.votes}</p>
+                      <p className="text-light_text mb-2">{result.answer}</p>
+                      <p className="text-gray-400 text-sm">Голосов: {result.votes}</p>
                     </div>
                   ))}
                 </div>
@@ -315,7 +316,7 @@ export default function GamePage() {
                   <div className="text-center mt-4">
                     <button
                       onClick={nextRound}
-                      className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-xl transition-colors duration-200"
+                      className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-xl transition-colors duration-200"
                     >
                       Следующий раунд
                     </button>
@@ -326,15 +327,15 @@ export default function GamePage() {
 
             {/* Итоговые результаты */}
             {gameState?.game_state === 'final_results' && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <h3 className="font-semibold text-yellow-800 mb-4">Игра завершена! 🎉</h3>
-                <p className="text-yellow-700 mb-4">Победитель: {gameState.players[0]?.name}</p>
+              <div className="bg-yellow-900/30 border border-yellow-700/50 rounded-lg p-4">
+                <h3 className="font-semibold text-yellow-400 mb-4">Игра завершена! 🎉</h3>
+                <p className="text-yellow-200 mb-4">Победитель: {gameState.players[0]?.name}</p>
                 
                 {isHost && (
                   <div className="text-center">
                     <button
                       onClick={() => router.push('/create')}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-xl transition-colors duration-200"
+                      className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-6 rounded-xl transition-colors duration-200"
                     >
                       Новая игра
                     </button>
@@ -346,20 +347,20 @@ export default function GamePage() {
             {/* Список игроков */}
             {gameState?.players && gameState.players.length > 0 && (
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Игроки в комнате:</h3>
+                <h3 className="font-semibold text-light_text mb-2">Игроки в комнате:</h3>
                 <div className="space-y-2">
                   {gameState.players.map((player, index) => (
-                    <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div key={index} className="flex justify-between items-center p-3 bg-dark_bg rounded-lg border border-accent/20">
                       <div className="flex items-center space-x-3">
-                        <span className="font-medium">{player.name}</span>
+                        <span className="font-medium text-light_text">{player.name}</span>
                         {player.has_answered && gameState.game_state === 'answering' && (
-                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">✓</span>
+                          <span className="bg-green-900 text-green-300 px-2 py-1 rounded-full text-xs border border-green-700">✓</span>
                         )}
                         {player.has_voted && gameState.game_state === 'voting' && (
-                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">✓</span>
+                          <span className="bg-blue-900 text-blue-300 px-2 py-1 rounded-full text-xs border border-blue-700">✓</span>
                         )}
                       </div>
-                      <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+                      <span className="bg-blue-900 text-blue-300 px-3 py-1 rounded-full text-sm font-semibold border border-blue-700">
                         {player.score} очков
                       </span>
                     </div>
@@ -373,7 +374,7 @@ export default function GamePage() {
         <div className="text-center">
           <button
             onClick={() => router.push('/')}
-            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-xl transition-colors duration-200"
+            className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-xl transition-colors duration-200 hover:ring-2 hover:ring-white hover:ring-offset-0"
           >
             Выйти в меню
           </button>
