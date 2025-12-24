@@ -212,7 +212,12 @@ export default function GamePage() {
             <p className="text-green-400 font-semibold mt-1">🎮 Вы - ведущий</p>
           )}
         </header>
-        
+        <div className="bg-white p-3 rounded-lg">
+        <QRCode 
+          url={`http://${computerIP}:3000/game/${code}?ip=${computerIP}`}
+          size={160}
+          />
+        </div>
         <div className="bg-dark_card rounded-xl shadow-lg p-6 mb-6">
           <h2 className="text-2xl font-bold text-light_text mb-4">Статус игры</h2>
           
