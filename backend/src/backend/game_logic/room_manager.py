@@ -46,7 +46,8 @@ class RoomManager:
             'code': code,
             'game': DeathPartyGameEngine(),
             'players': {},
-            'status': 'waiting'
+            'status': 'waiting',
+            'host_id': None  # ID первого подключившегося игрока (ведущий)
         }
         self.room_codes[code] = room_id
         self.connections[room_id] = ConnectionManager()
@@ -68,17 +69,27 @@ class RoomManager:
             # Подключаем WebSocket
             await self.connections[room_id].connect(websocket, player_id)
             
-            # Добавляем игрока в игру
-            player_name = f'Игрок {len(room["players"]) + 1}'
-            room['game'].add_player(player_id, player_name)
-            
-            room['players'][player_id] = {
-                'name': player_name,
-                'score': 0,
-                'connected': True
-            }
-            
-            print(f"✅ Игрок добавлен: {player_name} ({player_id})")
+            # Если игрок уже был в комнате, обновляем его статус подключения
+            if player_id in room['players']:
+                room['players'][player_id]['connected'] = True
+                print(f"🔄 Игрок переподключен: {room['players'][player_id]['name']} ({player_id})")
+            else:
+                # Если это первый игрок, делаем его ведущим
+                if room['host_id'] is None:
+                    room['host_id'] = player_id
+                    print(f"🎮 Первый игрок становится ведущим: {player_id}")
+                
+                # Добавляем нового игрока в игру
+                player_name = f'Игрок {len(room["players"]) + 1}'
+                room['game'].add_player(player_id, player_name)
+                
+                room['players'][player_id] = {
+                    'name': player_name,
+                    'score': 0,
+                    'connected': True
+                }
+                
+                print(f"✅ Игрок добавлен: {player_name} ({player_id})")
             
             # Отправляем начальное состояние
             await self.update_room_state(room_id)
@@ -110,6 +121,10 @@ class RoomManager:
                     print(f"🎯 Игрок установил имя: {player_name}")
                 
             elif msg_type == 'start_game':
+                # Проверяем, является ли игрок ведущим
+                if player_id != room.get('host_id'):
+                    print(f"❌ Игрок {player_id} пытается начать игру, но не является ведущим")
+                    return
                 try:
                     game_engine.start_game()
                     print(f"🎮 Игра начата в комнате {room_id}")
@@ -121,16 +136,18 @@ class RoomManager:
                 game_engine.submit_answer(player_id, answer)
                 
             elif msg_type == 'submit_vote':
-                voted_answer_id = msg_data.get('answer_id')
-                if voted_answer_id is not None:
+                voted_player_id = msg_data.get('player_id')
+                if voted_player_id and voted_player_id != player_id:
+                    # Проверяем, что игрок существует и это не сам игрок
                     current_round = game_engine.game.rounds[game_engine.game.current_round]
-                    answer_keys = list(current_round.player_answers.keys())
-                    if 0 <= voted_answer_id < len(answer_keys):
-                        voted_player_id = answer_keys[voted_answer_id]
-                        if voted_player_id != player_id:
-                            game_engine.submit_vote(player_id, voted_player_id)
+                    if voted_player_id in current_round.player_answers:
+                        game_engine.submit_vote(player_id, voted_player_id)
                 
             elif msg_type == 'next_round':
+                # Проверяем, является ли игрок ведущим
+                if player_id != room.get('host_id'):
+                    print(f"❌ Игрок {player_id} пытается начать следующий раунд, но не является ведущим")
+                    return
                 game_engine.next_round()
                 
             await self.update_room_state(room_id)
@@ -145,6 +162,9 @@ class RoomManager:
             
         room = self.rooms[room_id]
         game_state = room['game'].get_game_state()
+        
+        # Добавляем информацию о ведущем игроке
+        game_state['host_id'] = room.get('host_id')
         
         state_message = {
             'type': 'game_state_update',
@@ -164,16 +184,39 @@ class RoomManager:
             self.rooms[room_id]['players'][player_id]['connected'] = False
             if room_id in self.connections:
                 self.connections[room_id].disconnect(player_id)
+            
+            # Если ведущий отключился, назначаем нового ведущего (первого из оставшихся)
+            if self.rooms[room_id].get('host_id') == player_id:
+                remaining_players = [pid for pid in self.rooms[room_id]['players'].keys() 
+                                   if pid != player_id and self.rooms[room_id]['players'][pid]['connected']]
+                if remaining_players:
+                    self.rooms[room_id]['host_id'] = remaining_players[0]
+                    print(f"🎮 Новый ведущий: {remaining_players[0]}")
+                else:
+                    self.rooms[room_id]['host_id'] = None
+                    
             print(f"👋 Игрок отключен: {player_id}")
 
     def get_room_status(self, room_code: str):
         if room_code in self.room_codes:
             room_id = self.room_codes[room_code]
             room = self.rooms[room_id]
+            players_list = [
+                {
+                    'id': pid,
+                    'name': room['players'][pid]['name'],
+                    'score': room['players'][pid]['score'],
+                    'is_host': pid == room.get('host_id')
+                }
+                for pid in room['players'].keys()
+                if room['players'][pid]['connected']
+            ]
             return {
                 'exists': True,
                 'room_id': room_id,
-                'player_count': len(room['players']),
-                'status': room['status']
+                'player_count': len(players_list),
+                'status': room['status'],
+                'players': players_list,
+                'host_id': room.get('host_id')
             }
         return {'exists': False}

@@ -3,6 +3,7 @@
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
 import FloatingElements from '../../components/FloatingElements'
+import { QRCode } from '../../components/QRCode'
 
 interface GameState {
   game_state: string
@@ -12,9 +13,10 @@ interface GameState {
   question?: any
   answered_count?: number
   total_players?: number
-  answers?: { id: number; text: string }[]
+  answers?: { player_id: string; text: string }[]
   voted_count?: number
   round_results?: any
+  host_id?: string  // ID ведущего игрока
 }
 
 export default function GamePage() {
@@ -30,15 +32,15 @@ export default function GamePage() {
   const [playerId, setPlayerId] = useState('')
   const [connectionError, setConnectionError] = useState('')
   const [isHost, setIsHost] = useState(false)
+  const [answerText, setAnswerText] = useState('')
+  const [selectedAnswerForVote, setSelectedAnswerForVote] = useState<string | null>(null)
+  const [roomStatus, setRoomStatus] = useState<any>(null)
   const ws = useRef<WebSocket | null>(null)
+  const statusIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     const newPlayerId = Math.random().toString(36).substr(2, 9)
     setPlayerId(newPlayerId)
-    
-    // Проверяем, является ли игрок ведущим (пришел с главной страницы)
-    const urlParams = new URLSearchParams(window.location.search)
-    setIsHost(urlParams.has('host'))
     
     return () => {
       if (ws.current) {
@@ -52,7 +54,7 @@ export default function GamePage() {
 
     setConnectionError('')
     
-    // Используем IP компьютера для WebSocket
+    // Используем IP компьютера для WebSocket (используем room_code напрямую)
     const wsUrl = computerIP === 'localhost' 
       ? `ws://localhost:8000/ws/${code}/${playerId}`
       : `ws://${computerIP}:8000/ws/${code}/${playerId}`
@@ -77,7 +79,14 @@ export default function GamePage() {
         try {
           const message = JSON.parse(event.data)
           if (message.type === 'game_state_update') {
-            setGameState(message.data)
+            const state = message.data
+            setGameState(state)
+            // Проверяем, является ли текущий игрок ведущим
+            setIsHost(state.host_id === playerId)
+            // Сбрасываем выбранный ответ при смене фазы
+            if (state.game_state !== 'voting') {
+              setSelectedAnswerForVote(null)
+            }
           }
         } catch (error) {
           console.error('Ошибка парсинга сообщения:', error)
@@ -118,12 +127,13 @@ export default function GamePage() {
     }
   }
 
-  const submitVote = (answerId: number) => {
-    if (ws.current) {
+  const submitVote = (votedPlayerId: string) => {
+    if (ws.current && votedPlayerId !== playerId) {
       ws.current.send(JSON.stringify({
         type: 'submit_vote',
-        data: { answer_id: answerId }
+        data: { player_id: votedPlayerId }
       }))
+      setSelectedAnswerForVote(null)
     }
   }
 
@@ -198,11 +208,11 @@ export default function GamePage() {
       <div className="max-w-2xl mx-auto relative z-10">
         <header className="text-center mb-8">
           <p className="text-light_text mt-2 text-xl">Код: <span className="text-accent font-bold">{code}</span> | Игрок: <span className="text-accent font-bold">{playerName}</span></p>
-          {isHost && (
+          {isHost && gameState && (
             <p className="text-green-400 font-semibold mt-1">🎮 Вы - ведущий</p>
           )}
         </header>
-
+        
         <div className="bg-dark_card rounded-xl shadow-lg p-6 mb-6">
           <h2 className="text-2xl font-bold text-light_text mb-4">Статус игры</h2>
           
@@ -254,9 +264,22 @@ export default function GamePage() {
                   <textarea
                     placeholder="Введите ваш ответ..."
                     rows={3}
+                    value={answerText}
+                    onChange={(e) => setAnswerText(e.target.value)}
                     className="w-full px-3 py-2 border border-purple-500 rounded-lg focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 bg-dark_bg text-light_text"
-                    onBlur={(e) => submitAnswer(e.target.value)}
                   />
+                  <button
+                    onClick={() => {
+                      if (answerText.trim()) {
+                        submitAnswer(answerText.trim())
+                        setAnswerText('')
+                      }
+                    }}
+                    disabled={!answerText.trim()}
+                    className="w-full mt-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 disabled:cursor-not-allowed"
+                  >
+                    Отправить ответ
+                  </button>
                 </div>
                 
                 <div className="bg-blue-900/30 p-3 rounded-lg">
@@ -273,16 +296,31 @@ export default function GamePage() {
                 <h3 className="font-semibold text-indigo-300 mb-4">Голосование: выберите лучший ответ</h3>
                 
                 <div className="space-y-3">
-                  {gameState.answers.map((answer: any) => (
+                  {gameState.answers
+                    .filter((answer: any) => answer.player_id !== playerId) // Исключаем свой ответ
+                    .map((answer: any) => (
                     <button
-                      key={answer.id}
-                      onClick={() => submitVote(answer.id)}
-                      className="w-full p-4 bg-dark_bg border border-indigo-500 rounded-lg text-left hover:bg-indigo-900/50 transition-colors duration-200 group"
+                      key={answer.player_id}
+                      onClick={() => setSelectedAnswerForVote(answer.player_id)}
+                      className={`w-full p-4 bg-dark_bg border rounded-lg text-left transition-colors duration-200 group ${
+                        selectedAnswerForVote === answer.player_id
+                          ? 'border-indigo-400 bg-indigo-900/50'
+                          : 'border-indigo-500 hover:bg-indigo-900/50'
+                      }`}
                     >
                       <p className="text-indigo-200 group-hover:text-white transition-colors">{answer.text}</p>
                     </button>
                   ))}
                 </div>
+                
+                {selectedAnswerForVote && (
+                  <button
+                    onClick={() => submitVote(selectedAnswerForVote)}
+                    className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200"
+                  >
+                    Голосовать
+                  </button>
+                )}
                 
                 <div className="bg-blue-900/30 p-3 rounded-lg mt-4">
                   <p className="text-blue-300 text-sm">

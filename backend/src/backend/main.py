@@ -50,9 +50,15 @@ async def create_room():
         "room_code": room_code
     })
 
-@app.websocket("/ws/{room_id}/{player_id}")
-async def websocket_endpoint(websocket: WebSocket, room_id: str, player_id: str):
+@app.websocket("/ws/{room_code}/{player_id}")
+async def websocket_endpoint(websocket: WebSocket, room_code: str, player_id: str):
     """WebSocket подключение для реального времени"""
+    # Получаем room_id по room_code
+    if room_code not in room_manager.room_codes:
+        await websocket.close(code=1008, reason="Room not found")
+        return
+    
+    room_id = room_manager.room_codes[room_code]
     await room_manager.connect_player(room_id, player_id, websocket)
     try:
         while True:

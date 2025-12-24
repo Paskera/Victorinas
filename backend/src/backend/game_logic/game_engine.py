@@ -156,12 +156,13 @@ class DeathPartyGameEngine:
         
         elif self.game.state == GameState.VOTING:
             if current_round:
-                answers = list(current_round.player_answers.values())
-                random.shuffle(answers)
-                state_data['answers'] = [
-                    {'id': i, 'text': answer} 
-                    for i, answer in enumerate(answers)
+                # Передаем player_id и текст ответа, чтобы можно было исключить свой ответ
+                answers_list = [
+                    {'player_id': pid, 'text': answer} 
+                    for pid, answer in current_round.player_answers.items()
                 ]
+                random.shuffle(answers_list)
+                state_data['answers'] = answers_list
                 state_data['voted_count'] = len(current_round.votes)
         
         elif self.game.state == GameState.RESULTS:
