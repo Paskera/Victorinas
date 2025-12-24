@@ -24,7 +24,8 @@ export default function GamePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const code = params.code as string
-  const computerIP = searchParams.get('ip') || 'localhost'
+  // const computerIP = searchParams.get('ip') || 'localhost'
+  const [computerIP, setComputerIP] = useState('192.168.31.178')
   
   const [playerName, setPlayerName] = useState('')
   const [connected, setConnected] = useState(false)
@@ -49,6 +50,14 @@ export default function GamePage() {
     }
   }, [])
 
+  useEffect(() => {
+    // Автоматически получаем IP при загрузке
+    fetch('http://localhost:8000/local-ip')
+      .then(res => res.json())
+      .then(data => setComputerIP(data.ip))
+      .catch(() => setComputerIP('localhost'))
+  }, [])
+
   const connectToGame = () => {
     if (!code || !playerName.trim()) return
 
@@ -59,6 +68,8 @@ export default function GamePage() {
       ? `ws://localhost:8000/ws/${code}/${playerId}`
       : `ws://${computerIP}:8000/ws/${code}/${playerId}`
     
+
+
     console.log('Подключаемся к WebSocket:', wsUrl)
 
     try {
